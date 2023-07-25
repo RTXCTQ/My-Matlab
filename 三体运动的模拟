@@ -1,0 +1,83 @@
+clear;
+clc;
+m1=2*10^25;
+m2=2*10^23;
+m3=2*10^24;
+G=6.67*10^(-11);
+
+j=1;
+
+r1=30000;
+r2=30000;
+r3=30000;
+
+v1=[0,0,0];
+v2=[0,6000,0];
+v3=[6000,6000,-6000];
+
+m1position=[0,0,0];
+m2position=[5000000,0,0];
+m3position=[0,5000000,0];
+
+tstep=0.005;
+
+figure
+grid on
+axis equal
+hold on
+p1=plot3(m1position(1),m1position(2),m1position(3),MarkerSize=200);
+p2=plot3(m2position(1),m2position(2),m2position(3),MarkerSize=200);
+p3=plot3(m3position(1),m3position(2),m3position(3),MarkerSize=200);
+
+h1=animatedline('color','g','MaximumNumPoints',300);
+h2=animatedline('color','b','MaximumNumPoints',300);
+h3=animatedline('color','r','MaximumNumPoints',300);
+
+xlabel('X') %x轴标签
+ylabel('Y') %y轴标签
+zlabel('Z') %z轴标签
+
+for i=1:10000000000000
+  
+  r12=normest(m1position-m2position);
+  r13=normest(m3position-m1position);
+  r23=normest(m2position-m3position);
+
+F12=m1*m2*G/(r12^2);
+F13=m1*m3*G/(r13^2);
+F23=m2*m3*G/(r13^2);
+
+F12dir=(m2position-m1position)/normest(m2position-m1position);
+F13dir=(m3position-m1position)/normest(m3position-m1position);
+F23dir=(m3position-m2position)/normest(m3position-m2position);
+
+a1=F12dir*F12/m1+F13dir*F13/m1;
+a2=-F12dir*F12/m2+F23dir*F23/m2;
+a3=-F13dir*F13/m3-F23dir*F23/m3;
+
+v1=v1+a1*tstep;
+v2=v2+a2*tstep;
+v3=v3+a3*tstep;
+
+m1position=v1*tstep+m1position;
+m2position=v2*tstep+m2position;
+m3position=v3*tstep+m3position;
+
+j=j+1;
+while j==1024
+    j=0;
+    set(p1,'Xdata',m1position(1),'Ydata',m1position(2),'Zdata',m1position(3));
+    set(p2,'Xdata',m2position(1),'Ydata',m2position(2),'Zdata',m2position(3));
+    set(p3,'Xdata',m3position(1),'Ydata',m3position(2),'Zdata',m3position(3));
+    addpoints(h1,m1position(1),m1position(2),m1position(3))
+    addpoints(h2,m2position(1),m2position(2),m2position(3))
+    addpoints(h3,m3position(1),m3position(2),m3position(3))
+
+    drawnow
+end
+if r12<r1+r2||r13<r1+r3||r23<r2+r3
+    fprintf("相撞")
+    break
+end
+
+end
